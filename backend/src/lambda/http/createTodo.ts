@@ -37,7 +37,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   await docClient.put({
     TableName: todoTable,
     Item: todoItem
-  })
+  }).promise()
 
   const uploadUrl = getUploadUrl(todoId)
 
