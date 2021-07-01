@@ -15,17 +15,19 @@ export const handler = middy( async (event: APIGatewayProxyEvent): Promise<APIGa
   // Get all TODO items for a current user
   const userId = getUserId(event)
 
-  const todos = await getTodosByUser(userId)
+  const items = await getTodosByUser(userId)
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      todos
+      items
     })
   }
 })
 
-handler.use(cors())
+handler.use(cors({
+  credentials: true
+}))
 
 async function getTodosByUser(userId:string) {
   const result = await docClient.query({
