@@ -15,6 +15,19 @@ export class TodoAccess {
       Item: todoItem
     }).promise()
   }
+
+  async getTodosByUser(userId: string): Promise<TodoItem[]> {
+    const result = await this.docClient.query({
+      TableName: this.todoTable,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId
+      },
+      ScanIndexForward: false
+    }).promise()
+
+    return result.Items as TodoItem[]
+  }
 }
 
 function createDynamoDBClient() {
