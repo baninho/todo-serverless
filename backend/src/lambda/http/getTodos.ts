@@ -10,7 +10,7 @@ const docClient = new AWS.DynamoDB.DocumentClient()
 const todoTable = process.env.TODO_TABLE
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // TODO: Get all TODO items for a current user
+  // Get all TODO items for a current user
   const userId = getUserId(event)
 
   const todos = await getTodosByUser(userId)
