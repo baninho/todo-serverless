@@ -3,6 +3,7 @@ service: serverless-todo
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  - serverless-reqvalidator-plugin
 
 package:
   individually: true
@@ -40,6 +41,8 @@ functions:
           method: get
           path: todos
           cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   CreateTodo:
@@ -54,6 +57,8 @@ functions:
           method: post
           path: todos
           cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   UpdateTodo:
@@ -67,12 +72,13 @@ functions:
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.TODO_ID_INDEX}
-        
     events:
       - http:
           method: patch
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   DeleteTodo:
@@ -91,6 +97,8 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -105,6 +113,8 @@ functions:
           method: post
           path: todos/{todoId}/attachment
           cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
 resources:
   Resources:
@@ -168,3 +178,12 @@ resources:
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENTS_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
+
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
