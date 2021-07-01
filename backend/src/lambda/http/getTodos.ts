@@ -1,7 +1,9 @@
 import 'source-map-support/register'
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as AWS from 'aws-sdk'
+import * as middy from 'middy'
+import { cors } from 'middy/middlewares'
 
 import { getUserId } from '../utils'
 
@@ -9,7 +11,7 @@ const docClient = new AWS.DynamoDB.DocumentClient()
 
 const todoTable = process.env.TODO_TABLE
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler = middy( async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   // Get all TODO items for a current user
   const userId = getUserId(event)
 
@@ -21,7 +23,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       todos
     })
   }
-}
+})
+
+handler.use(cors())
 
 async function getTodosByUser(userId:string) {
   const result = await docClient.query({
