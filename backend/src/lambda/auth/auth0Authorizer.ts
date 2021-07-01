@@ -18,7 +18,7 @@ const jwksUrl = 'https://baninho.eu.auth0.com/.well-known/jwks.json'
 export const handler = async (
   event: CustomAuthorizerEvent
 ): Promise<CustomAuthorizerResult> => {
-  logger.info('Authorizing a user', event.authorizationToken)
+  logger.info(`Authorizing a user, token: ${event.authorizationToken}`)
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
     logger.info('User was authorized', jwtToken)
@@ -65,7 +65,7 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const res = await Axios(jwksUrl)
   const jwks = res.data.keys
   const secret = jwks.find((key) => {
-    key.kid === jwt.header.kid
+    return key.kid === jwt.header.kid
   })
 
   if (!secret) {
