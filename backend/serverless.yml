@@ -4,6 +4,9 @@ plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
 
+package:
+  individually: true
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -52,12 +55,19 @@ functions:
           cors: true
 
   # TODO: Configure this function
-  # UpdateTodo:
-  #   handler: src/lambda/http/updateTodo.handler
-  #   events:
-  #     - http:
-  #         method: patch
-  #         path: todos/{todoId}
+  UpdateTodo:
+    handler: src/lambda/http/updateTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+    events:
+      - http:
+          method: patch
+          path: todos/{todoId}
+          cors: true
 
   # TODO: Configure this function
   # DeleteTodo:
