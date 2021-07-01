@@ -2,11 +2,18 @@ import * as AWS  from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
 import { TodoItem } from '../models/TodoItem'
+import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
+
+interface TodoKey {
+  userId?: string
+  createdAt: string
+}
 
 export class TodoAccess {
   constructor(
     private readonly docClient: DocumentClient = createDynamoDBClient(),
-    private readonly todoTable = process.env.TODO_TABLE
+    private readonly todoTable = process.env.TODO_TABLE,
+    private readonly todoIdIndex = process.env.TODO_ID_INDEX
   ) {}
 
   async createTodo(todoItem: TodoItem) {
@@ -27,6 +34,53 @@ export class TodoAccess {
     }).promise()
 
     return result.Items as TodoItem[]
+  }
+
+  async deleteTodo(todoId: string, userId: string) {
+    const key = await this.getTodoKeyById(todoId)
+    
+    key.userId = userId
+  
+    const params = {
+      TableName: this.todoTable,
+      Key: key
+    }
+    
+    await this.docClient.delete(params).promise()
+  }
+
+  async updateTodo(updatedTodo: UpdateTodoRequest, todoId: string, userId: string) {
+    const key = await this.getTodoKeyById(todoId)
+    
+    key.userId = userId
+  
+    await this.docClient.update({
+      TableName: this.todoTable,
+      Key: key,
+      ExpressionAttributeNames: { '#N': 'name' },
+      UpdateExpression: 'set #N = :n, dueDate=:due, done=:d',
+      ExpressionAttributeValues:{
+        ':n':updatedTodo.name,
+        ':due':updatedTodo.dueDate,
+        ':d':updatedTodo.done
+      },
+      ReturnValues:'UPDATED_NEW'
+    }).promise()
+  }
+
+  private async getTodoKeyById(todoId: string): Promise<TodoKey> {
+    const result = await this.docClient.query({
+      TableName : this.todoTable,
+      IndexName : this.todoIdIndex,
+      KeyConditionExpression: 'todoId = :todoId',
+      ExpressionAttributeValues: {
+          ':todoId': todoId
+      }
+    }).promise()
+
+    return {
+      'createdAt': result.Items[0].createdAt
+    }
   }
 }
 
