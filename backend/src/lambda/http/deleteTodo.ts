@@ -36,16 +36,16 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     }
   }
 
-  logger.info(`delete params: ${params}`)
+  logger.info(`delete params.Key: ${params.Key}`)
   
   await docClient.delete(params).promise()
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      deletedItem: todoId
-    })
+    body: ''
   }
 })
 
-handler.use(cors())
+handler.use(cors({
+  credentials: true
+}))
