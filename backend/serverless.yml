@@ -3,7 +3,6 @@ service: serverless-todo
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
-  - serverless-reqvalidator-plugin
 
 package:
   individually: true
@@ -28,7 +27,6 @@ functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  # TODO: Configure this function
   GetTodos:
     handler: src/lambda/http/getTodos.handler
     iamRoleStatements:
@@ -42,9 +40,7 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
-  # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     iamRoleStatements:
@@ -58,9 +54,10 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
+          request:
+            schema:
+              application/json: ${file(src/models/create-todo-schema.json)}
 
-  # TODO: Configure this function
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     iamRoleStatements:
@@ -78,9 +75,7 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
-  # TODO: Configure this function
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     iamRoleStatements:
@@ -92,15 +87,17 @@ functions:
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.TODO_ID_INDEX}
+      - Effect: Allow
+        Action:
+          - s3:DeleteObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_BUCKET}
     events:
       - http:
           method: delete
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
-  # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     iamRoleStatements:
@@ -114,11 +111,9 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
 resources:
   Resources:
-    # TODO: Add any necessary AWS resources
     ImagesDynamoDBTable:
       Type: "AWS::DynamoDB::Table"
       Properties:
@@ -178,12 +173,3 @@ resources:
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENTS_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
-
-    RequestBodyValidator:
-      Type: AWS::ApiGateway::RequestValidator
-      Properties:
-        Name: 'request-body-validator'
-        RestApiId:
-          Ref: ApiGatewayRestApi
-        ValidateRequestBody: true
-        ValidateRequestParameters: false
