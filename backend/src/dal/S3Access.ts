@@ -1,4 +1,7 @@
 import * as AWS  from 'aws-sdk'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('S3Access')
 
 export class S3Access{
   constructor(
@@ -7,13 +10,15 @@ export class S3Access{
   ) {}
 
   async deleteObject(todoId: string){
+    logger.info(`deleting S3 object ${todoId}`)
+    
     try {
       await this.s3.deleteObject({
         Bucket: this.bucketName,
         Key: todoId
       }).promise()
     } catch (e) {
-      throw e
+      logger.error(`Error deleting S3 item`, { message: e.message })
     }
   }
 }
