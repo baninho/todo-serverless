@@ -37,9 +37,9 @@ export async function getTodosByUser(userId:string): Promise<TodoItem[]> {
 
 export async function deleteTodo(todoId: string, userId: string) {
   await todoAccess.deleteTodo(todoId, userId)
+  await s3access.deleteObject(todoId)
 }
 
 export async function updateTodo(updatedTodo: UpdateTodoRequest, todoId: string, userId: string) {
   await todoAccess.updateTodo(updatedTodo, todoId, userId)
-  await s3access.deleteObject(todoId)
 }

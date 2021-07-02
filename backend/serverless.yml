@@ -94,7 +94,7 @@ functions:
       - Effect: Allow
         Action:
           - s3:DeleteObject
-        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_BUCKET}
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_BUCKET}/*
     events:
       - http:
           method: delete
