@@ -20,6 +20,10 @@ provider:
     SIGNED_URL_EXPIRATION: 300
     TODO_ID_INDEX: TodoIdIndex
 
+  tracing:
+    lambda: true
+    apiGateway: true
+
 custom:
   topicName: attachmentTopic
 
