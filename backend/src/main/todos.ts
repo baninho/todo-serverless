@@ -1,4 +1,5 @@
 import * as uuid from 'uuid'
+import { S3Access } from '../dal/S3Access';
 
 import { TodoAccess } from "../dal/todoAccess";
 import { TodoItem } from '../models/TodoItem';
@@ -8,6 +9,7 @@ import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
 const bucketName = process.env.ATTACHMENTS_BUCKET
 
 const todoAccess = new TodoAccess()
+const s3access = new S3Access()
 
 export async function createTodo(todoRequest: CreateTodoRequest, userId: string):Promise<TodoItem> {
   const todoId = uuid.v4()
@@ -39,4 +41,5 @@ export async function deleteTodo(todoId: string, userId: string) {
 
 export async function updateTodo(updatedTodo: UpdateTodoRequest, todoId: string, userId: string) {
   await todoAccess.updateTodo(updatedTodo, todoId, userId)
+  await s3access.deleteObject(todoId)
 }
