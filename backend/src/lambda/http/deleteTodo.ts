@@ -6,7 +6,6 @@ import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 import { createLogger } from '../../utils/logger'
 import { deleteTodo } from '../../main/todos'
-import { deleteObject } from '../../main/attachments'
 
 const logger = createLogger('deleteTodo')
 
@@ -18,7 +17,6 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   logger.info(`delete todo: ${todoId}, userId: ${userId}`)
 
   await deleteTodo(todoId, userId)
-  await deleteObject(todoId)
 
   return {
     statusCode: 200,
